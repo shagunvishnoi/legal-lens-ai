@@ -7,6 +7,7 @@ const groq = new Groq({
 export async function simplifyLegalText(text: string): Promise<string> {
   const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
+    temperature: 0,
     messages: [
       {
         role: "user",
@@ -32,4 +33,45 @@ Format your response with these exact sections:
   })
 
   return completion.choices[0]?.message?.content ?? ""
+}
+
+export async function detectRiskyClasses(text: string): Promise<{
+  risky: string[]
+  dates: string[]
+  obligations: string[]
+}> {
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    temperature: 0,
+    messages: [
+      {
+        role: "user",
+        content: `You are a legal risk detector. Extract exact phrases from the following legal text.
+
+Return ONLY a valid JSON object with no extra text, no markdown, no backticks:
+{
+  "risky": ["exact risky phrase 1", "exact risky phrase 2"],
+  "dates": ["exact date phrase 1"],
+  "obligations": ["exact obligation phrase 1"]
+}
+
+Rules:
+- phrases must be EXACTLY as they appear in the text
+- max 5 items per category
+- keep phrases short (under 10 words)
+
+Legal text:
+${text.slice(0, 2000)}`,
+      },
+    ],
+    max_tokens: 512,
+  })
+
+  try {
+    const content = completion.choices[0]?.message?.content ?? "{}"
+    const cleaned = content.replace(/```json|```/g, "").trim()
+    return JSON.parse(cleaned)
+  } catch {
+    return { risky: [], dates: [], obligations: [] }
+  }
 }
