@@ -1,8 +1,10 @@
+
 "use client"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 
 interface Highlights {
   risky: string[]
@@ -10,26 +12,25 @@ interface Highlights {
   obligations: string[]
 }
 
+interface Message {
+  role: "user" | "ai"
+  content: string
+}
+
 function HighlightedText({ text, highlights }: { text: string; highlights: Highlights }) {
   if (!highlights.risky.length && !highlights.dates.length && !highlights.obligations.length) {
     return <p className="text-sm whitespace-pre-wrap">{text}</p>
   }
-
-  let result = text
   const parts: { text: string; type: "risky" | "dates" | "obligations" | "normal" }[] = []
-
-  // Simple highlight by splitting text
   const allPhrases = [
     ...highlights.risky.map(p => ({ phrase: p, type: "risky" as const })),
     ...highlights.dates.map(p => ({ phrase: p, type: "dates" as const })),
     ...highlights.obligations.map(p => ({ phrase: p, type: "obligations" as const })),
   ]
-
   let remaining = text
   while (remaining.length > 0) {
     let earliestIndex = -1
     let earliestPhrase = null as { phrase: string; type: "risky" | "dates" | "obligations" } | null
-
     for (const p of allPhrases) {
       const idx = remaining.indexOf(p.phrase)
       if (idx !== -1 && (earliestIndex === -1 || idx < earliestIndex)) {
@@ -37,11 +38,8 @@ function HighlightedText({ text, highlights }: { text: string; highlights: Highl
         earliestPhrase = p
       }
     }
-
     if (earliestPhrase && earliestIndex !== -1) {
-      if (earliestIndex > 0) {
-        parts.push({ text: remaining.slice(0, earliestIndex), type: "normal" })
-      }
+      if (earliestIndex > 0) parts.push({ text: remaining.slice(0, earliestIndex), type: "normal" })
       parts.push({ text: earliestPhrase.phrase, type: earliestPhrase.type })
       remaining = remaining.slice(earliestIndex + earliestPhrase.phrase.length)
     } else {
@@ -49,14 +47,12 @@ function HighlightedText({ text, highlights }: { text: string; highlights: Highl
       break
     }
   }
-
   const colorMap = {
     risky: "bg-red-200 text-red-900 rounded px-0.5",
     dates: "bg-yellow-200 text-yellow-900 rounded px-0.5",
     obligations: "bg-blue-200 text-blue-900 rounded px-0.5",
     normal: "",
   }
-
   return (
     <p className="text-sm whitespace-pre-wrap leading-relaxed">
       {parts.map((part, i) => (
@@ -73,6 +69,9 @@ export default function UploadPage() {
   const [extractedText, setExtractedText] = useState("")
   const [analysis, setAnalysis] = useState("")
   const [highlights, setHighlights] = useState<Highlights>({ risky: [], dates: [], obligations: [] })
+  const [messages, setMessages] = useState<Message[]>([])
+  const [question, setQuestion] = useState("")
+  const [chatLoading, setChatLoading] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setFile(e.target.files[0])
@@ -92,7 +91,6 @@ export default function UploadPage() {
   const handleAnalyze = async () => {
     if (!extractedText) return
     setAnalyzing(true)
-
     const [analysisRes, highlightRes] = await Promise.all([
       fetch("/api/analyze", {
         method: "POST",
@@ -105,22 +103,34 @@ export default function UploadPage() {
         body: JSON.stringify({ text: extractedText }),
       }),
     ])
-
     const analysisData = await analysisRes.json()
     const highlightData = await highlightRes.json()
-
     setAnalysis(analysisData.analysis)
     setHighlights(highlightData)
     setAnalyzing(false)
   }
 
+  const handleChat = async () => {
+    if (!question.trim() || !extractedText) return
+    const userMessage = question
+    setQuestion("")
+    setMessages(prev => [...prev, { role: "user", content: userMessage }])
+    setChatLoading(true)
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: userMessage, documentText: extractedText }),
+    })
+    const data = await res.json()
+    setMessages(prev => [...prev, { role: "ai", content: data.answer }])
+    setChatLoading(false)
+  }
+
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-10">
+    <main className="min-h-screen bg-background flex flex-col items-center px-4 py-10 pb-20">
       <div className="max-w-2xl w-full space-y-6">
         <h1 className="text-3xl font-bold text-center">Upload Legal Document</h1>
-        <p className="text-muted-foreground text-center">
-          Upload a PDF and get instant AI-powered legal analysis.
-        </p>
+        <p className="text-muted-foreground text-center">Upload a PDF and get instant AI-powered legal analysis.</p>
 
         <Card className="p-6 space-y-4">
           <input type="file" accept=".pdf" onChange={handleFileChange} className="w-full border rounded p-2 text-sm" />
@@ -155,6 +165,39 @@ export default function UploadPage() {
                   {line.replace(/\*\*/g, '')}
                 </p>
               ))}
+            </div>
+          </Card>
+        )}
+
+        {analysis && (
+          <Card className="p-6 space-y-4">
+            <h2 className="font-semibold">💬 Chat with Document</h2>
+            <p className="text-xs text-muted-foreground">Ask anything about your legal document</p>
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {messages.length === 0 && (
+                <p className="text-sm text-muted-foreground italic">Try asking: "What are my obligations?" or "Are there any penalties?"</p>
+              )}
+              {messages.map((msg, i) => (
+                <div key={i} className={`p-3 rounded-lg text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground ml-8" : "bg-muted mr-8"}`}>
+                  <span className="font-semibold">{msg.role === "user" ? "You" : "AI"}: </span>
+                  {msg.content}
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="bg-muted p-3 rounded-lg text-sm mr-8">
+                  <span className="font-semibold">AI: </span>Thinking...
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={question}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuestion(e.target.value)}
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleChat()}
+                placeholder="Ask about your document..."
+                className="flex-1"
+              />
+              <Button onClick={handleChat} disabled={chatLoading || !question.trim()}>Ask</Button>
             </div>
           </Card>
         )}

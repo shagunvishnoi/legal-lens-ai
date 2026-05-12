@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -20,14 +21,12 @@ function HighlightedText({ text, highlights }: { text: string; highlights: Highl
   if (!highlights.risky.length && !highlights.dates.length && !highlights.obligations.length) {
     return <p className="text-sm whitespace-pre-wrap">{text}</p>
   }
-
   const parts: { text: string; type: "risky" | "dates" | "obligations" | "normal" }[] = []
   const allPhrases = [
     ...highlights.risky.map(p => ({ phrase: p, type: "risky" as const })),
     ...highlights.dates.map(p => ({ phrase: p, type: "dates" as const })),
     ...highlights.obligations.map(p => ({ phrase: p, type: "obligations" as const })),
   ]
-
   let remaining = text
   while (remaining.length > 0) {
     let earliestIndex = -1
@@ -48,14 +47,12 @@ function HighlightedText({ text, highlights }: { text: string; highlights: Highl
       break
     }
   }
-
   const colorMap = {
     risky: "bg-red-200 text-red-900 rounded px-0.5",
     dates: "bg-yellow-200 text-yellow-900 rounded px-0.5",
     obligations: "bg-blue-200 text-blue-900 rounded px-0.5",
     normal: "",
   }
-
   return (
     <p className="text-sm whitespace-pre-wrap leading-relaxed">
       {parts.map((part, i) => (
@@ -133,11 +130,8 @@ export default function UploadPage() {
     <main className="min-h-screen bg-background flex flex-col items-center px-4 py-10 pb-20">
       <div className="max-w-2xl w-full space-y-6">
         <h1 className="text-3xl font-bold text-center">Upload Legal Document</h1>
-        <p className="text-muted-foreground text-center">
-          Upload a PDF and get instant AI-powered legal analysis.
-        </p>
+        <p className="text-muted-foreground text-center">Upload a PDF and get instant AI-powered legal analysis.</p>
 
-        {/* Upload Card */}
         <Card className="p-6 space-y-4">
           <input type="file" accept=".pdf" onChange={handleFileChange} className="w-full border rounded p-2 text-sm" />
           {file && <p className="text-sm text-muted-foreground">Selected: {file.name}</p>}
@@ -146,7 +140,6 @@ export default function UploadPage() {
           </Button>
         </Card>
 
-        {/* Extracted Text + Analyze Button */}
         {extractedText && (
           <Card className="p-6 space-y-4">
             <div className="flex gap-4 text-xs">
@@ -163,7 +156,6 @@ export default function UploadPage() {
           </Card>
         )}
 
-        {/* AI Analysis */}
         {analysis && (
           <Card className="p-6">
             <h2 className="font-semibold mb-3">AI Legal Analysis:</h2>
@@ -177,16 +169,13 @@ export default function UploadPage() {
           </Card>
         )}
 
-        {/* Chat with Document */}
         {analysis && (
           <Card className="p-6 space-y-4">
             <h2 className="font-semibold">💬 Chat with Document</h2>
             <p className="text-xs text-muted-foreground">Ask anything about your legal document</p>
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {messages.length === 0 && (
-                <p className="text-sm text-muted-foreground italic">
-                  Try asking: "What are my obligations?" or "Are there any penalties?"
-                </p>
+                <p className="text-sm text-muted-foreground italic">Try asking: "What are my obligations?" or "Are there any penalties?"</p>
               )}
               {messages.map((msg, i) => (
                 <div key={i} className={`p-3 rounded-lg text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground ml-8" : "bg-muted mr-8"}`}>
@@ -208,9 +197,7 @@ export default function UploadPage() {
                 placeholder="Ask about your document..."
                 className="flex-1"
               />
-              <Button onClick={handleChat} disabled={chatLoading || !question.trim()}>
-                Ask
-              </Button>
+              <Button onClick={handleChat} disabled={chatLoading || !question.trim()}>Ask</Button>
             </div>
           </Card>
         )}
