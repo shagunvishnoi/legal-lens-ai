@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import Groq from "groq-sdk"
 import { findRelevantChunks, storeDocument } from "@/rag"
 
+export const runtime = "edge"
+
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! })
 
 export async function POST(req: NextRequest) {
