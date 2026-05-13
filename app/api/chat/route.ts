@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const context = relevantChunks.join("\n\n")
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       temperature: 0,
       messages: [
         {
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 4. Always maintain a professional yet warm tone.
 
 Document context:
-${context}
+${context.slice(0, 1500)}
 
 Question: ${question}
 
@@ -48,6 +48,6 @@ Give a clear, simple answer in 2-3 sentences.`,
     })
   } catch (error) {
     console.error("Chat error:", error)
-    return NextResponse.json({ error: "Failed to answer question" }, { status: 500 })
+    return NextResponse.json({ error: "AI analysis temporarily unavailable. Please try again shortly." }, { status: 500 })
   }
 }

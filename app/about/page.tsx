@@ -7,24 +7,19 @@ export default function AboutPage() {
     <main className="min-h-screen bg-[#FAF7F2] relative overflow-hidden font-sans">
       
       {/* Hero Section */}
-      <section className="relative py-24 px-6 flex flex-col items-center justify-center text-center z-10 border-b border-[#E7E0D8] bg-[#FFFCF7] animate-in fade-in duration-1000 overflow-hidden">
+      <section className="relative py-16 md:py-20 px-6 flex flex-col items-center justify-center text-center z-10 border-b border-[#E7E0D8] bg-[#FFFCF7] animate-in fade-in duration-1000 overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#44312A_1px,transparent_1px)] [background-size:20px_20px]"></div>
         </div>
-        <div className="relative z-10 max-w-4xl mx-auto space-y-8">
-          <div className="inline-flex items-center gap-3 bg-[#F0EAE0] border border-[#E7E0D8] px-5 py-2 rounded-full text-[10px] text-[#92400E] font-bold uppercase tracking-[0.2em] animate-in slide-in-from-top-4 duration-700">
+        <div className="relative z-10 max-w-4xl mx-auto space-y-6 md:space-y-8">
+          <div className="inline-flex items-center gap-3 bg-[#F0EAE0] border border-[#E7E0D8] px-4 py-1.5 rounded-full text-[10px] text-[#92400E] font-bold uppercase tracking-[0.2em] animate-in slide-in-from-top-4 duration-700">
             The LegalLens Protocol
           </div>
-          <div className="flex justify-center mb-2">
-            <p className="text-sm md:text-base text-[#92400E] font-mono tracking-widest uppercase animate-in slide-in-from-top-4 duration-700">
-              Understand every word before you sign
-            </p>
-          </div>
-          <h1 className="text-6xl md:text-7xl font-black tracking-tighter leading-[0.85] max-w-4xl mx-auto text-[#1C1008] animate-float">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-[1.1] max-w-4xl mx-auto text-[#1C1008] animate-float">
             Absolute legal <br className="hidden md:block" />
             <span className="text-[#92400E] italic">clarity.</span>
           </h1>
-          <p className="text-xl text-[#78716C] max-w-3xl mx-auto font-light leading-relaxed animate-in slide-in-from-bottom-8 duration-700 delay-200">
+          <p className="text-lg md:text-xl text-[#78716C] max-w-3xl mx-auto font-light leading-relaxed animate-in slide-in-from-bottom-8 duration-700 delay-200">
             We are engineering a future where agreements are understood, not just signed. Zero jargon. Full transparency.
           </p>
         </div>
@@ -33,35 +28,35 @@ export default function AboutPage() {
       <div className="max-w-5xl mx-auto px-6 py-24 space-y-16 relative z-10">
 
         {/* Mission */}
-        <div className="bg-[#FFFCF7] border border-[#E7E0D8] shadow-sm rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-md">
-          <div className="border-b border-[#E7E0D8] px-10 py-6 flex items-center gap-4 bg-[#F0EAE0]/30">
-            <div className="w-10 h-10 bg-[#F0EAE0] rounded-xl flex items-center justify-center">
-              <Target className="w-5 h-5 text-[#92400E]" />
+        <div className="bg-[#FFFCF7] border border-[#E7E0D8] shadow-sm rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-md">
+          <div className="border-b border-[#E7E0D8] px-8 py-5 flex items-center gap-3 bg-[#F0EAE0]/30">
+            <div className="w-8 h-8 bg-[#F0EAE0] rounded-lg flex items-center justify-center">
+              <Target className="w-4 h-4 text-[#92400E]" />
             </div>
-            <h2 className="text-[#1C1008] font-bold text-2xl tracking-tight">Our Mission</h2>
+            <h2 className="text-[#1C1008] font-bold text-xl tracking-tight">Our Mission</h2>
           </div>
-          <div className="p-10 space-y-6">
-            <p className="text-[#44312A] leading-relaxed text-xl font-light">
+          <div className="p-8 space-y-4">
+            <p className="text-[#44312A] leading-relaxed text-lg font-light">
               Legal documents are often dense, confusing, and difficult for ordinary people to understand. Hidden clauses, legal jargon, and complex agreements can lead to unfair decisions, financial loss, or obligations users never fully understood.
             </p>
-            <p className="text-[#44312A] leading-relaxed text-xl font-light">
+            <p className="text-[#44312A] leading-relaxed text-lg font-light">
               LegalLens AI was built to make legal understanding accessible to everyone. By combining artificial intelligence with intelligent document analysis, LegalLens AI simplifies contracts, highlights risks, explains obligations, and helps users make informed decisions before signing important agreements.
             </p>
-            <p className="text-[#44312A] leading-relaxed text-xl font-light">
+            <p className="text-[#44312A] leading-relaxed text-lg font-light">
               We believe legal clarity should not be limited to lawyers or large corporations — it should be accessible, transparent, and understandable for everyone.
             </p>
           </div>
         </div>
 
         {/* What We Do */}
-        <div className="bg-[#FFFCF7] border border-[#E7E0D8] shadow-sm rounded-[2rem] overflow-hidden transition-all duration-200 hover:shadow-md">
-          <div className="border-b border-[#E7E0D8] px-10 py-6 flex items-center gap-4 bg-[#F0EAE0]/30">
-            <div className="w-10 h-10 bg-[#F0EAE0] rounded-xl flex items-center justify-center">
-              <Activity className="w-5 h-5 text-[#92400E]" />
+        <div className="bg-[#FFFCF7] border border-[#E7E0D8] shadow-sm rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md">
+          <div className="border-b border-[#E7E0D8] px-8 py-5 flex items-center gap-3 bg-[#F0EAE0]/30">
+            <div className="w-8 h-8 bg-[#F0EAE0] rounded-lg flex items-center justify-center">
+              <Activity className="w-4 h-4 text-[#92400E]" />
             </div>
-            <h2 className="text-[#1C1008] font-bold text-2xl tracking-tight">Our Platform</h2>
+            <h2 className="text-[#1C1008] font-bold text-xl tracking-tight">Our Platform</h2>
           </div>
-          <div className="p-10">
+          <div className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
                 { icon: <FileText className="w-5 h-5 text-[#92400E]" />, title: "Smart Text Extraction", desc: "High-fidelity extraction that preserves the structural integrity and formatting of your legal documents." },

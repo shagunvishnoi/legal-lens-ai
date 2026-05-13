@@ -72,6 +72,7 @@ export default function UploadPage() {
   const [question, setQuestion] = useState("")
   const [chatLoading, setChatLoading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const extractedTextRef = useRef<HTMLDivElement>(null)
@@ -132,29 +133,42 @@ export default function UploadPage() {
   const handleAnalyze = async () => {
     if (!extractedText) return
     setAnalyzing(true)
+    setError(null)
     
     // Scroll extracted text to top
     if (extractedTextRef.current) {
       extractedTextRef.current.scrollTo({ top: 0, behavior: "smooth" })
     }
 
-    const [analysisRes, highlightRes] = await Promise.all([
-      fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: extractedText }),
-      }),
-      fetch("/api/highlight", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: extractedText }),
-      }),
-    ])
-    const analysisData = await analysisRes.json()
-    const highlightData = await highlightRes.json()
-    setAnalysis(analysisData.analysis)
-    setHighlights(highlightData)
-    setAnalyzing(false)
+    try {
+      const [analysisRes, highlightRes] = await Promise.all([
+        fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: extractedText }),
+        }),
+        fetch("/api/highlight", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: extractedText }),
+        }),
+      ])
+      
+      const analysisData = await analysisRes.json()
+      const highlightData = await highlightRes.json()
+
+      if (analysisData.error) {
+        setError(analysisData.error)
+      } else {
+        setAnalysis(analysisData.analysis)
+      }
+      
+      setHighlights(highlightData)
+    } catch (err) {
+      setError("AI analysis temporarily unavailable. Please try again shortly.")
+    } finally {
+      setAnalyzing(false)
+    }
   }
 
   const sendChat = async (q: string) => {
@@ -162,58 +176,68 @@ export default function UploadPage() {
     setMessages(prev => [...prev, { role: "user", content: q }])
     setQuestion("")
     setChatLoading(true)
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: q, documentText: extractedText }),
-    })
-    const data = await res.json()
-    setMessages(prev => [...prev, { role: "ai", content: data.answer }])
-    setChatLoading(false)
+    setError(null)
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, documentText: extractedText }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        setMessages(prev => [...prev, { role: "ai", content: data.error }])
+      } else {
+        setMessages(prev => [...prev, { role: "ai", content: data.answer }])
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { role: "ai", content: "AI analysis temporarily unavailable. Please try again shortly." }])
+    } finally {
+      setChatLoading(false)
+    }
   }
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] font-sans">
 
       {/* Page Header */}
-      <div className="bg-[#FFFCF7] border-b border-[#E7E0D8] py-24 px-6 text-center animate-in fade-in duration-1000">
-        <div className="max-w-3xl mx-auto space-y-8">
-          <div className="inline-flex items-center gap-2 bg-[#F0EAE0] border border-[#E7E0D8] px-5 py-2 rounded-full text-[10px] text-[#92400E] font-bold uppercase tracking-[0.2em] animate-in slide-in-from-top-4 duration-700">
+      <div className="bg-[#FFFCF7] border-b border-[#E7E0D8] py-12 md:py-16 px-6 text-center animate-in fade-in duration-1000">
+        <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
+          <div className="inline-flex items-center gap-2 bg-[#F0EAE0] border border-[#E7E0D8] px-4 py-1.5 rounded-full text-[10px] text-[#92400E] font-bold uppercase tracking-[0.2em] animate-in slide-in-from-top-4 duration-700">
             AI-Powered Legal Analysis
           </div>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#1C1008] leading-[0.9] animate-in slide-in-from-bottom-8 duration-700 delay-100">
+          <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-[#1C1008] leading-[1.1] animate-in slide-in-from-bottom-8 duration-700 delay-100">
             Analyze Your <span className="text-[#92400E] italic">Document</span>
           </h1>
-          <p className="text-[#78716C] text-xl font-light max-w-xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 duration-700 delay-200">
+          <p className="text-[#78716C] text-base md:text-lg font-light max-w-xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 duration-700 delay-200">
             Upload any legal document and understand exactly what you're signing — in plain English.
           </p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-16 space-y-10">
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12 space-y-6 md:space-y-8">
 
         {/* Upload Card */}
-        <div className="bg-[#FFFCF7] border border-[#E7E0D8] rounded-3xl shadow-sm overflow-hidden">
-          <div className="border-b border-[#E7E0D8] px-8 py-6 flex items-center gap-4 bg-[#F0EAE0]/50">
-            <div className="w-10 h-10 bg-[#F0EAE0] rounded-xl flex items-center justify-center">
-              <UploadCloud className="w-5 h-5 text-[#92400E]" />
+        <div className="bg-[#FFFCF7] border border-[#E7E0D8] rounded-2xl shadow-sm overflow-hidden">
+          <div className="border-b border-[#E7E0D8] px-6 py-4 flex items-center gap-3 bg-[#F0EAE0]/50">
+            <div className="w-8 h-8 bg-[#F0EAE0] rounded-lg flex items-center justify-center">
+              <UploadCloud className="w-4 h-4 text-[#92400E]" />
             </div>
-            <h2 className="text-[#1C1008] font-bold text-xl">Upload Document</h2>
+            <h2 className="text-[#1C1008] font-bold text-lg">Upload Document</h2>
           </div>
-          <div className="p-8">
+          <div className="p-6">
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-14 text-center cursor-pointer transition-all duration-300 ${dragOver
+              className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${dragOver
                   ? "border-[#92400E] bg-[#F0EAE0]"
                   : "border-[#E7E0D8] hover:border-[#92400E]/50 hover:bg-[#F0EAE0]/30"
                 }`}
             >
-              <UploadCloud className="w-10 h-10 text-[#A8998A] mx-auto mb-3" />
-              <p className="font-semibold text-[#44312A] text-base">Drop your PDF here</p>
-              <p className="text-sm text-[#A8998A] mt-1">or click to browse files</p>
+              <UploadCloud className="w-8 h-8 text-[#A8998A] mx-auto mb-2" />
+              <p className="font-semibold text-[#44312A] text-sm">Drop your PDF here</p>
+              <p className="text-xs text-[#A8998A] mt-1">or click to browse files</p>
               <p className="text-xs text-[#C4B8AA] mt-2">Supports PDF up to 10MB</p>
             </div>
 
@@ -257,19 +281,19 @@ export default function UploadPage() {
 
         {/* Extracted Text */}
         {extractedText && (
-          <div className="group relative bg-[#FFFCF7] border border-[#E7E0D8] hover:border-[#92400E] rounded-[2.5rem] shadow-sm overflow-hidden transition-all duration-200 inner-glow">
+          <div className="group relative bg-[#FFFCF7] border border-[#E7E0D8] hover:border-[#92400E] rounded-2xl shadow-sm overflow-hidden transition-all duration-200 inner-glow">
             {/* Analysis Overlay */}
             {analyzing && (
               <div className="absolute inset-0 z-50 bg-[#FAF7F2]/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
-                <div className="bg-white p-8 rounded-3xl shadow-2xl border border-[#E7E0D8] flex flex-col items-center gap-4 max-w-sm text-center">
-                  <div className="w-16 h-16 bg-[#44312A] rounded-2xl flex items-center justify-center animate-bounce shadow-xl">
-                    <Bot className="w-8 h-8 text-[#FAF7F2]" />
+                <div className="bg-white p-6 rounded-2xl shadow-2xl border border-[#E7E0D8] flex flex-col items-center gap-3 max-w-xs text-center">
+                  <div className="w-12 h-12 bg-[#44312A] rounded-xl flex items-center justify-center animate-bounce shadow-xl">
+                    <Bot className="w-6 h-6 text-[#FAF7F2]" />
                   </div>
                   <div>
-                    <h3 className="text-[#1C1008] font-bold text-xl">Analyzing Clauses...</h3>
-                    <p className="text-[#78716C] text-sm mt-1">Llama 3.3 is contextualizing your legal agreement.</p>
+                    <h3 className="text-[#1C1008] font-bold text-lg">Analyzing...</h3>
+                    <p className="text-[#78716C] text-xs mt-0.5">Llama 3.1 is processing your agreement.</p>
                   </div>
-                  <div className="w-full bg-[#F0EAE0] h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div className="w-full bg-[#F0EAE0] h-1 rounded-full mt-1 overflow-hidden">
                     <div className="bg-[#92400E] h-full animate-[shimmer_2s_infinite] w-full origin-left" />
                   </div>
                 </div>
@@ -281,14 +305,14 @@ export default function UploadPage() {
               SOURCE
             </div>
 
-            <div className="border-b border-[#E7E0D8] px-10 py-8 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-[#F0EAE0]/30">
-              <div className="flex items-center gap-5">
-                <div className="w-12 h-12 bg-[#44312A] rounded-2xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform">
-                  <FileText className="w-6 h-6 text-[#FAF7F2]" />
+            <div className="border-b border-[#E7E0D8] px-8 py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#F0EAE0]/30">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-[#44312A] rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform">
+                  <FileText className="w-5 h-5 text-[#FAF7F2]" />
                 </div>
                 <div>
-                  <h2 className="text-[#1C1008] font-black text-2xl tracking-tighter leading-none">Document Source</h2>
-                  <p className="text-[#78716C] text-xs font-mono mt-1 uppercase tracking-widest">OCR Extraction Layer</p>
+                  <h2 className="text-[#1C1008] font-black text-xl tracking-tighter leading-none">Document Source</h2>
+                  <p className="text-[#78716C] text-[10px] font-mono mt-0.5 uppercase tracking-widest">Extraction Layer</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -300,8 +324,8 @@ export default function UploadPage() {
                 <span className="bg-green-50 text-green-600 border border-green-100 text-xs px-3 py-1.5 rounded-full font-medium">🟢 Obligations</span>
               </div>
             </div>
-            <div className="p-8">
-              <div ref={extractedTextRef} className="max-h-72 overflow-y-auto bg-[#FAF7F2] rounded-xl p-5 border border-[#E7E0D8]">
+            <div className="p-6">
+              <div ref={extractedTextRef} className="max-h-64 overflow-y-auto bg-[#FAF7F2] rounded-xl p-5 border border-[#E7E0D8]">
                 <HighlightedText text={extractedText} highlights={highlights} />
               </div>
               <button
@@ -323,15 +347,26 @@ export default function UploadPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
             {/* AI Summary */}
-            <div className="bg-[#FFFCF7] border border-[#E7E0D8] hover:border-[#92400E] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[650px] transition-all duration-300">
-              <div className="border-b border-[#E7E0D8] px-8 py-6 flex items-center gap-4 bg-[#F0EAE0]/50">
-                <div className="w-10 h-10 bg-[#F0EAE0] rounded-xl flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-[#92400E]" />
+            <div className="bg-[#FFFCF7] border border-[#E7E0D8] hover:border-[#92400E] rounded-2xl shadow-sm overflow-hidden flex flex-col h-[500px] transition-all duration-300">
+              <div className="border-b border-[#E7E0D8] px-6 py-4 flex items-center gap-3 bg-[#F0EAE0]/50">
+                <div className="w-8 h-8 bg-[#F0EAE0] rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[#92400E]" />
                 </div>
-                <h2 className="text-[#1C1008] font-bold text-xl">AI Summary</h2>
+                <h2 className="text-[#1C1008] font-bold text-lg">AI Summary</h2>
               </div>
               <div className="p-8 overflow-y-auto flex-1 space-y-3 text-sm leading-relaxed">
-                {analysis ? (
+                {error ? (
+                  <div className="h-full flex flex-col items-center justify-center text-red-500 text-center gap-4 p-6 bg-red-50/50 rounded-2xl border border-red-100">
+                    <ShieldAlert className="w-8 h-8" />
+                    <p className="font-medium">{error}</p>
+                    <button 
+                      onClick={handleAnalyze}
+                      className="text-xs underline hover:text-red-700 font-bold uppercase tracking-widest"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                ) : analysis ? (
                   analysis.split('\n').map((line, i) => (
                     <p key={i} className={
                       line.startsWith('**')
@@ -357,12 +392,12 @@ export default function UploadPage() {
             </div>
 
             {/* Chat */}
-            <div className="bg-[#FFFCF7] border border-[#E7E0D8] hover:border-[#92400E] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[650px] transition-all duration-300">
-              <div className="border-b border-[#E7E0D8] px-8 py-6 flex items-center gap-4 bg-[#F0EAE0]/50">
-                <div className="w-10 h-10 bg-[#F0EAE0] rounded-xl flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-[#92400E]" />
+            <div className="bg-[#FFFCF7] border border-[#E7E0D8] hover:border-[#92400E] rounded-2xl shadow-sm overflow-hidden flex flex-col h-[500px] transition-all duration-300">
+              <div className="border-b border-[#E7E0D8] px-6 py-4 flex items-center gap-3 bg-[#F0EAE0]/50">
+                <div className="w-8 h-8 bg-[#F0EAE0] rounded-lg flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-[#92400E]" />
                 </div>
-                <h2 className="text-[#1C1008] font-bold text-xl">Ask a Question</h2>
+                <h2 className="text-[#1C1008] font-bold text-lg">Ask a Question</h2>
               </div>
 
               <div ref={chatContainerRef} className="p-6 flex-1 overflow-y-auto space-y-3 flex flex-col">

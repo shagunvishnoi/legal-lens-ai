@@ -17,15 +17,15 @@ export default function Navbar() {
         </Link>
 
         {/* Links */}
-        <div className="flex items-center gap-2">
-          <Link href="/dashboard" className="px-5 py-2.5 rounded-xl text-sm text-[#78716C] hover:text-[#1C1008] hover:bg-[#F0EAE0] transition-all font-semibold">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Link href="/dashboard" className="hidden sm:block px-5 py-2.5 rounded-xl text-sm text-[#78716C] hover:text-[#1C1008] hover:bg-[#F0EAE0] transition-all font-semibold">
             Dashboard
           </Link>
-          <Link href="/about" className="px-5 py-2.5 rounded-xl text-sm text-[#78716C] hover:text-[#1C1008] hover:bg-[#F0EAE0] transition-all font-semibold">
+          <Link href="/about" className="hidden sm:block px-5 py-2.5 rounded-xl text-sm text-[#78716C] hover:text-[#1C1008] hover:bg-[#F0EAE0] transition-all font-semibold">
             About Us
           </Link>
-          <Link href="/upload" className="ml-4 px-6 py-3 rounded-xl text-sm font-bold bg-[#44312A] text-[#FAF7F2] hover:bg-[#2C1A10] transition-all shadow-md hover:scale-105 active:scale-95 group flex items-center gap-2">
-            Analyze Document <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <Link href="/upload" className="sm:ml-4 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold bg-[#44312A] text-[#FAF7F2] hover:bg-[#2C1A10] transition-all shadow-md hover:scale-105 active:scale-95 group flex items-center gap-2">
+            Analyze <span className="hidden xs:inline">Document</span> <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 

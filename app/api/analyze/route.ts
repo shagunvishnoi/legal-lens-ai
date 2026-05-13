@@ -14,6 +14,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ analysis })
   } catch (error) {
     console.error("Analysis error:", error)
-    return NextResponse.json({ error: "Failed to analyze text", details: String(error) }, { status: 500 })
+    return NextResponse.json({ error: "AI analysis temporarily unavailable. Please try again shortly." }, { status: 500 })
   }
 }

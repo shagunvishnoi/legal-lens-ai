@@ -22,7 +22,7 @@ export default function DashboardPage() {
     },
     { 
       category: "AI Layer", 
-      items: ["Groq / Gemini API", "Llama 3.3 Model", "Vision Analysis"],
+      items: ["Groq / Gemini API", "Llama 3.1 Model", "Vision Analysis"],
       icon: <Cpu className="w-5 h-5 text-[#92400E]" />
     },
     { 
@@ -36,10 +36,10 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-[#FAF7F2] font-sans selection:bg-[#92400E] selection:text-[#FAF7F2] overflow-x-hidden">
       
       {/* 1. HERO SECTION */}
-      <section className="relative pt-24 pb-16 px-6 text-center overflow-hidden border-b border-[#E7E0D8]">
+      <section className="relative pt-16 pb-12 px-6 text-center overflow-hidden border-b border-[#E7E0D8]">
         <motion.div 
           style={{ opacity, scale }}
-          className="max-w-4xl mx-auto space-y-6 relative z-10"
+          className="max-w-4xl mx-auto space-y-5 relative z-10"
         >
           <motion.div 
             initial={{ opacity: 0, scale: 0.8 }}
@@ -54,7 +54,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl font-black tracking-tighter leading-[1.1] text-[#1C1008]"
+            className="text-4xl md:text-6xl font-black tracking-tighter leading-[1.1] text-[#1C1008]"
           >
             Stop signing <br />
             <span className="text-[#92400E] italic relative inline-block">
@@ -107,7 +107,7 @@ export default function DashboardPage() {
       </section>
 
       {/* 2. LIVE AI PREVIEW SECTION */}
-      <section id="preview" className="max-w-6xl mx-auto px-6 py-20 relative">
+      <section id="preview" className="max-w-6xl mx-auto px-6 py-12 relative">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
           
           <motion.div 
@@ -322,11 +322,11 @@ export default function DashboardPage() {
       </section>
 
       {/* 5. WHY LEGALLENS AI SECTION */}
-      <section className="max-w-5xl mx-auto px-6 py-20">
+      <section className="max-w-5xl mx-auto px-6 py-12">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          className="bg-white border border-[#E7E0D8] rounded-[3rem] p-12 md:p-16 shadow-lg relative overflow-hidden"
+          className="bg-white border border-[#E7E0D8] rounded-2xl p-8 md:p-10 shadow-lg relative overflow-hidden"
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
             <div className="space-y-8">
@@ -351,9 +351,9 @@ export default function DashboardPage() {
       </section>
 
       {/* 6. CTA SECTION */}
-      <section className="max-w-5xl mx-auto px-6 pb-20">
+      <section className="max-w-5xl mx-auto px-6 pb-12">
         <motion.div 
-          className="bg-[#92400E] rounded-[2.5rem] p-12 md:p-14 text-center relative overflow-hidden shadow-2xl"
+          className="bg-[#92400E] rounded-2xl p-10 md:p-12 text-center relative overflow-hidden shadow-2xl"
         >
           <div className="relative z-10 space-y-6">
             <motion.h2 

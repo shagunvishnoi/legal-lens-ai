@@ -6,7 +6,7 @@ const groq = new Groq({
 
 export async function simplifyLegalText(text: string): Promise<string> {
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: "llama-3.1-8b-instant",
     temperature: 0,
     messages: [
       {
@@ -20,7 +20,7 @@ Analyze the following legal text and provide:
 4. Risk flags (clauses that seem unfair or risky)
 
 Legal text:
-${text.slice(0, 3000)}
+${text.slice(0, 2000)}
 
 Format your response with these exact sections:
 **SUMMARY**
@@ -41,7 +41,7 @@ export async function detectRiskyClasses(text: string): Promise<{
   obligations: string[]
 }> {
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: "llama-3.1-8b-instant",
     temperature: 0,
     messages: [
       {
