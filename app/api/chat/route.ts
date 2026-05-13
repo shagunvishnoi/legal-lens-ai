@@ -37,7 +37,7 @@ Guidelines:
 5. Stay on track: If they ask something totally unrelated to legal docs, give a quick friendly answer but gently bring them back to the document.
 
 Document context:
-${context.slice(0, 2000)}
+${context.slice(0, 8000)}
 
 Question: ${question}
 
