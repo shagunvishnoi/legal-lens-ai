@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { analyzeDocument } from "@/ai/simplify"
 
-export const runtime = "edge"
-
 export async function POST(req: NextRequest) {
   try {
     const { text } = await req.json()

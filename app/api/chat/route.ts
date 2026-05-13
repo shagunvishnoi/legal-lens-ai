@@ -1,58 +1,52 @@
-import { NextRequest, NextResponse } from "next/server"
-import Groq from "groq-sdk"
-import { findRelevantChunks, storeDocument } from "@/rag"
+import { NextRequest, NextResponse } from "next/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { findRelevantChunks, storeDocument } from "@/rag";
 
-export const runtime = "edge"
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(req: NextRequest) {
   try {
-    const { question, documentText } = await req.json()
+    const { question, documentText } = await req.json();
 
     if (!question || !documentText) {
-      return NextResponse.json({ error: "Missing question or document" }, { status: 400 })
+      return NextResponse.json({ error: "Missing question or document" }, { status: 400 });
     }
 
     // Store and chunk the document
-    storeDocument(documentText)
+    storeDocument(documentText);
 
     // Find relevant chunks
-    const relevantChunks = findRelevantChunks(question)
-    const context = relevantChunks.join("\n\n")
+    const relevantChunks = findRelevantChunks(question);
+    const context = relevantChunks.join("\n\n");
 
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      temperature: 0,
-      messages: [
-        {
-          role: "user",
-          content: `You are a warm, helpful, and natural AI Legal Assistant. Your goal is to help the user understand their document in plain, simple English.
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `You are a warm, helpful, and natural AI Legal Assistant. Your goal is to help the user understand their document in plain, simple English.
 
 Guidelines:
-1. Be natural: Use a friendly, human-like tone. Don't sound like a robot.
+1. Be natural: Use a friendly, human-like tone.
 2. Be smart: If the user asks about 'risks' or 'problems', look for 'liabilities', 'indemnities', 'termination', or anything that seems unfair.
-3. Be inclusive: If the user uses simple or broken English, respond with very clear and simple language to help them understand.
-4. Be helpful: If you don't see an exact answer, find the most related information and explain it. Never just say "I don't know."
-5. Stay on track: If they ask something totally unrelated to legal docs, give a quick friendly answer but gently bring them back to the document.
+3. Be inclusive: Respond with very clear and simple language.
+4. Be helpful: If you don't see an exact answer, find the most related information and explain it.
+5. Stay on track: Focus on the document provided.
 
 Document context:
-${context.slice(0, 8000)}
+${context}
 
 Question: ${question}
 
-Respond in 2-3 natural sentences.`,
-        },
-      ],
-      max_tokens: 512,
-    })
+Respond in 2-3 natural sentences.`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const answer = response.text();
 
     return NextResponse.json({
-      answer: completion.choices[0]?.message?.content ?? "No answer found",
+      answer: answer,
       context: relevantChunks,
-    })
+    });
   } catch (error) {
-    console.error("Chat error:", error)
-    return NextResponse.json({ error: "AI analysis temporarily unavailable. Please try again shortly." }, { status: 500 })
+    console.error("Gemini Chat error:", error);
+    return NextResponse.json({ error: "AI assistant is currently busy. Please try again in 10 seconds." }, { status: 500 });
   }
 }

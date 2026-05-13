@@ -1,8 +1,6 @@
-import Groq from "groq-sdk"
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY!,
-})
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export interface AnalysisResult {
   summary: string
@@ -14,13 +12,9 @@ export interface AnalysisResult {
 }
 
 export async function analyzeDocument(text: string): Promise<AnalysisResult> {
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
-    temperature: 0,
-    messages: [
-      {
-        role: "user",
-        content: `You are an expert legal assistant. Analyze the following legal text and provide a summary and highlight extraction in a SINGLE JSON object.
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const prompt = `You are an expert legal assistant. Analyze the following legal text and provide a summary and highlight extraction in a SINGLE JSON object.
 
 Format your response EXACTLY like this (no other text, no markdown, no backticks):
 {
@@ -38,21 +32,20 @@ Rules for highlights:
 - Max 5 per category.
 
 Legal text:
-${text.slice(0, 10000)}`,
-      },
-    ],
-    max_tokens: 800,
-    response_format: { type: "json_object" }
-  })
+${text.slice(0, 100000)}`;
 
   try {
-    const content = completion.choices[0]?.message?.content ?? "{}"
-    return JSON.parse(content)
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const content = response.text();
+    // Gemini sometimes adds backticks even if told not to
+    const cleaned = content.replace(/```json|```/g, "").trim();
+    return JSON.parse(cleaned);
   } catch (e) {
-    console.error("Analysis parsing failed:", e)
+    console.error("Gemini Analysis failed:", e);
     return {
-      summary: "Error analyzing document.",
+      summary: "Error analyzing document with Gemini.",
       highlights: { risky: [], dates: [], obligations: [] }
-    }
+    };
   }
 }
