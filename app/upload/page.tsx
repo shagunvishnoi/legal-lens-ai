@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { UploadCloud, FileText, Loader2, Bot, X, Sparkles, Send } from "lucide-react"
+import { UploadCloud, FileText, Loader2, Bot, X, Sparkles, Send, CheckCircle2 } from "lucide-react"
 
 interface Highlights {
   risky: string[]
@@ -73,21 +73,54 @@ export default function UploadPage() {
   const [chatLoading, setChatLoading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
+  const extractedTextRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      })
+    }
+  }, [messages, chatLoading])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setFile(e.target.files[0])
+    if (e.target.files?.[0]) {
+      setFile(e.target.files[0])
+      // Reset states when new file is selected
+      setExtractedText("")
+      setAnalysis("")
+      setHighlights({ risky: [], dates: [], obligations: [] })
+      setMessages([])
+    }
   }
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setDragOver(false)
     const dropped = e.dataTransfer.files[0]
-    if (dropped?.type === "application/pdf") setFile(dropped)
+    if (dropped?.type === "application/pdf") {
+      setFile(dropped)
+      // Reset states when new file is dropped
+      setExtractedText("")
+      setAnalysis("")
+      setHighlights({ risky: [], dates: [], obligations: [] })
+      setMessages([])
+    }
   }
 
   const handleUpload = async () => {
     if (!file) return
     setLoading(true)
+    
+    // Reset states just in case
+    setExtractedText("")
+    setAnalysis("")
+    setHighlights({ risky: [], dates: [], obligations: [] })
+    setMessages([])
+
     const formData = new FormData()
     formData.append("file", file)
     const res = await fetch("/api/upload", { method: "POST", body: formData })
@@ -99,6 +132,12 @@ export default function UploadPage() {
   const handleAnalyze = async () => {
     if (!extractedText) return
     setAnalyzing(true)
+    
+    // Scroll extracted text to top
+    if (extractedTextRef.current) {
+      extractedTextRef.current.scrollTo({ top: 0, behavior: "smooth" })
+    }
+
     const [analysisRes, highlightRes] = await Promise.all([
       fetch("/api/analyze", {
         method: "POST",
@@ -208,7 +247,7 @@ export default function UploadPage() {
                 }`}
             >
               {loading ? (
-                <><Loader2 className="w-6 h-6 animate-spin" /> Processing Neural Core...</>
+                <><Loader2 className="w-6 h-6 animate-spin" /> Processing...</>
               ) : (
                 <><Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" /> Upload & Extract Text</>
               )}
@@ -219,6 +258,24 @@ export default function UploadPage() {
         {/* Extracted Text */}
         {extractedText && (
           <div className="group relative bg-[#FFFCF7] border border-[#E7E0D8] hover:border-[#92400E] rounded-[2.5rem] shadow-sm overflow-hidden transition-all duration-200 inner-glow">
+            {/* Analysis Overlay */}
+            {analyzing && (
+              <div className="absolute inset-0 z-50 bg-[#FAF7F2]/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
+                <div className="bg-white p-8 rounded-3xl shadow-2xl border border-[#E7E0D8] flex flex-col items-center gap-4 max-w-sm text-center">
+                  <div className="w-16 h-16 bg-[#44312A] rounded-2xl flex items-center justify-center animate-bounce shadow-xl">
+                    <Bot className="w-8 h-8 text-[#FAF7F2]" />
+                  </div>
+                  <div>
+                    <h3 className="text-[#1C1008] font-bold text-xl">Analyzing Clauses...</h3>
+                    <p className="text-[#78716C] text-sm mt-1">Llama 3.3 is contextualizing your legal agreement.</p>
+                  </div>
+                  <div className="w-full bg-[#F0EAE0] h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div className="bg-[#92400E] h-full animate-[shimmer_2s_infinite] w-full origin-left" />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Watermark Decoration */}
             <div className="absolute -right-12 top-1/2 -translate-y-1/2 opacity-[0.02] text-9xl font-black text-[#44312A] -rotate-90 pointer-events-none select-none tracking-[0.5em]">
               SOURCE
@@ -235,13 +292,16 @@ export default function UploadPage() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
+                <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                  <CheckCircle2 className="w-3 h-3" /> Text Extracted
+                </span>
                 <span className="bg-red-50 text-red-600 border border-red-100 text-xs px-3 py-1.5 rounded-full font-medium">🔴 Risky</span>
                 <span className="bg-amber-50 text-amber-600 border border-amber-100 text-xs px-3 py-1.5 rounded-full font-medium">🟡 Dates</span>
                 <span className="bg-green-50 text-green-600 border border-green-100 text-xs px-3 py-1.5 rounded-full font-medium">🟢 Obligations</span>
               </div>
             </div>
             <div className="p-8">
-              <div className="max-h-72 overflow-y-auto bg-[#FAF7F2] rounded-xl p-5 border border-[#E7E0D8]">
+              <div ref={extractedTextRef} className="max-h-72 overflow-y-auto bg-[#FAF7F2] rounded-xl p-5 border border-[#E7E0D8]">
                 <HighlightedText text={extractedText} highlights={highlights} />
               </div>
               <button
@@ -252,19 +312,15 @@ export default function UploadPage() {
                     : "bg-[#44312A] text-[#FAF7F2] hover:bg-[#2C1A10] shadow-md active:scale-[0.98]"
                   }`}
               >
-                {analyzing ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Analyzing...</>
-                ) : (
-                  <><Bot className="w-5 h-5" /> Analyze with AI</>
-                )}
+                <Bot className="w-5 h-5" /> Analyze with AI
               </button>
             </div>
           </div>
         )}
 
         {/* Analysis + Chat */}
-        {(analysis || messages.length > 0) && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {extractedText && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
             {/* AI Summary */}
             <div className="bg-[#FFFCF7] border border-[#E7E0D8] hover:border-[#92400E] rounded-3xl shadow-sm overflow-hidden flex flex-col h-[650px] transition-all duration-300">
@@ -287,6 +343,11 @@ export default function UploadPage() {
                       {line.replace(/\*\*/g, '').replace(/^\* /, '')}
                     </p>
                   ))
+                ) : analyzing ? (
+                  <div className="h-full flex flex-col items-center justify-center text-[#A8998A] text-center gap-4">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#92400E]" />
+                    <p className="animate-pulse">AI is reading the document...</p>
+                  </div>
                 ) : (
                   <div className="h-full flex items-center justify-center text-[#A8998A] text-center">
                     <p>Your analysis will appear here.</p>
@@ -304,7 +365,7 @@ export default function UploadPage() {
                 <h2 className="text-[#1C1008] font-bold text-xl">Ask a Question</h2>
               </div>
 
-              <div className="p-6 flex-1 overflow-y-auto space-y-3 flex flex-col">
+              <div ref={chatContainerRef} className="p-6 flex-1 overflow-y-auto space-y-3 flex flex-col">
                 {messages.length === 0 && (
                   <div className="flex-1 flex flex-col justify-center space-y-3">
                     <p className="text-xs text-[#A8998A] font-medium text-center mb-2">Try asking:</p>

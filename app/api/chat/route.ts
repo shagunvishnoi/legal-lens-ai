@@ -25,7 +25,11 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: `You are a legal document assistant. Answer the question based ONLY on the document context below. If the answer is not in the context, say "I couldn't find that in the document."
+          content: `You are an AI Legal Assistant. While your primary job is to answer questions about the provided document context, you should also:
+1. Respond politely to general greetings (like 'how are you' or 'hello').
+2. If a question is off-topic or about a different context, give a short, polite answer and then guide the user back to asking about the document.
+3. If the answer is not in the context, say "I couldn't find that in the document."
+4. Always maintain a professional yet warm tone.
 
 Document context:
 ${context}

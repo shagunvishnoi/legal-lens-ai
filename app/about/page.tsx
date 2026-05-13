@@ -40,9 +40,15 @@ export default function AboutPage() {
             </div>
             <h2 className="text-[#1C1008] font-bold text-2xl tracking-tight">Our Mission</h2>
           </div>
-          <div className="p-10">
+          <div className="p-10 space-y-6">
             <p className="text-[#44312A] leading-relaxed text-xl font-light">
-              Legal documents are complex, confusing, and often asymmetric. LegalLens AI was built to democratize legal understanding — giving individuals and professionals the power to analyze agreements with perfect precision. We believe legal clarity is a fundamental right.
+              Legal documents are often dense, confusing, and difficult for ordinary people to understand. Hidden clauses, legal jargon, and complex agreements can lead to unfair decisions, financial loss, or obligations users never fully understood.
+            </p>
+            <p className="text-[#44312A] leading-relaxed text-xl font-light">
+              LegalLens AI was built to make legal understanding accessible to everyone. By combining artificial intelligence with intelligent document analysis, LegalLens AI simplifies contracts, highlights risks, explains obligations, and helps users make informed decisions before signing important agreements.
+            </p>
+            <p className="text-[#44312A] leading-relaxed text-xl font-light">
+              We believe legal clarity should not be limited to lawyers or large corporations — it should be accessible, transparent, and understandable for everyone.
             </p>
           </div>
         </div>
@@ -58,10 +64,10 @@ export default function AboutPage() {
           <div className="p-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
-                { icon: <FileText className="w-5 h-5 text-[#92400E]" />, title: "Intelligent Extraction", desc: "OCR-powered extraction that preserves complex legal formatting and structure." },
+                { icon: <FileText className="w-5 h-5 text-[#92400E]" />, title: "Smart Text Extraction", desc: "High-fidelity extraction that preserves the structural integrity and formatting of your legal documents." },
                 { icon: <Scale className="w-5 h-5 text-[#92400E]" />, title: "Linguistic Simplification", desc: "Advanced LLMs translate dense legalese into plain, actionable English summaries." },
-                { icon: <ShieldAlert className="w-5 h-5 text-[#92400E]" />, title: "Automated Risk Scoring", desc: "Heuristic-driven AI identifies unusual clauses, liabilities, and hidden deadlines." },
-                { icon: <MessageSquare className="w-5 h-5 text-[#92400E]" />, title: "Semantic Document Chat", desc: "Context-aware interrogation of your document using a secure RAG pipeline." },
+                { icon: <ShieldAlert className="w-5 h-5 text-[#92400E]" />, title: "Intelligent Risk Detection", desc: "AI-driven analysis that identifies unusual clauses, hidden liabilities, and critical deadlines." },
+                { icon: <MessageSquare className="w-5 h-5 text-[#92400E]" />, title: "Document Intelligence Chat", desc: "Context-aware interrogation of your document to get instant answers about specific terms." },
               ].map((f, i) => (
                 <div key={f.title} className={`p-8 rounded-2xl bg-[#FAF7F2] border border-[#E7E0D8] hover:border-[#92400E] space-y-4 hover:shadow-xl hover:scale-[1.02] transition-all duration-200 animate-in fade-in slide-in-from-bottom-4 delay-${(i+1)*100}`}>
                   <div className="w-12 h-12 bg-[#FFFCF7] border border-[#E7E0D8] rounded-xl flex items-center justify-center mb-2 shadow-sm">

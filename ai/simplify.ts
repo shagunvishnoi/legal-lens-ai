@@ -71,7 +71,9 @@ ${text.slice(0, 2000)}`,
     const content = completion.choices[0]?.message?.content ?? "{}"
     const cleaned = content.replace(/```json|```/g, "").trim()
     return JSON.parse(cleaned)
-  } catch {
+  } catch (e) {
+    const content = completion.choices[0]?.message?.content ?? "{}"
+    console.error("JSON Parsing failed. Raw content from Groq:", content);
     return { risky: [], dates: [], obligations: [] }
   }
 }
