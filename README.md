@@ -87,13 +87,16 @@ Interactive AI Chat
 #  Screenshots
 
 ## Landing Page
-(Add screenshot here)
+![Landing Page - Top](screenshots_v1/landing_page_top.png)
+![Landing Page - Bottom](screenshots_v1/landing_page_bottom.png)
 
 ## Document Upload & Analysis
-(Add screenshot here)
+![Upload Page - Top](screenshots_v1/Upload_top.png)
+![Upload Page - Bottom](screenshots_v1/Upload_bottom.png)
 
 ## AI Chat Interface
-(Add screenshot here)
+![About Us - Top](screenshots_v1/aboutUs_top.png)
+![About Us - Bottom](screenshots_v1/aboutUs_bottom.png)
 
 ---
 
