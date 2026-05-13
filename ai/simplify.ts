@@ -38,7 +38,7 @@ Rules for highlights:
 - Max 5 per category.
 
 Legal text:
-${text.slice(0, 8000)}`,
+${text.slice(0, 5000)}`,
       },
     ],
     max_tokens: 800,
