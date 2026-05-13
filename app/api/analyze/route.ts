@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { simplifyLegalText } from "@/ai/simplify"
+import { analyzeDocument } from "@/ai/simplify"
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,9 +9,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No text provided" }, { status: 400 })
     }
 
-    const analysis = await simplifyLegalText(text)
+    const result = await analyzeDocument(text)
+    
+    if (!result || !result.summary) {
+      console.error("AI returned empty analysis for provided text");
+      return NextResponse.json({ error: "The AI was unable to generate a summary for this document. Please try a different section or a shorter document." }, { status: 500 })
+    }
 
-    return NextResponse.json({ analysis })
+    return NextResponse.json(result)
   } catch (error) {
     console.error("Analysis error:", error)
     return NextResponse.json({ error: "AI analysis temporarily unavailable. Please try again shortly." }, { status: 500 })

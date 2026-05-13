@@ -4,76 +4,55 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
 })
 
-export async function simplifyLegalText(text: string): Promise<string> {
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
-    temperature: 0,
-    messages: [
-      {
-        role: "user",
-        content: `You are a legal document simplifier.
-
-Analyze the following legal text and provide:
-1. A simple plain-English summary (2-3 sentences)
-2. Key obligations (bullet points)
-3. Important dates or deadlines (if any)
-4. Risk flags (clauses that seem unfair or risky)
-
-Legal text:
-${text.slice(0, 2000)}
-
-Format your response with these exact sections:
-**SUMMARY**
-**KEY OBLIGATIONS**
-**IMPORTANT DATES**
-**RISK FLAGS**`,
-      },
-    ],
-    max_tokens: 1024,
-  })
-
-  return completion.choices[0]?.message?.content ?? ""
+export interface AnalysisResult {
+  summary: string
+  highlights: {
+    risky: string[]
+    dates: string[]
+    obligations: string[]
+  }
 }
 
-export async function detectRiskyClasses(text: string): Promise<{
-  risky: string[]
-  dates: string[]
-  obligations: string[]
-}> {
+export async function analyzeDocument(text: string): Promise<AnalysisResult> {
   const completion = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
     temperature: 0,
     messages: [
       {
         role: "user",
-        content: `You are a legal risk detector. Extract exact phrases from the following legal text.
+        content: `You are an expert legal assistant. Analyze the following legal text and provide a summary and highlight extraction in a SINGLE JSON object.
 
-Return ONLY a valid JSON object with no extra text, no markdown, no backticks:
+Format your response EXACTLY like this (no other text, no markdown, no backticks):
 {
-  "risky": ["exact risky phrase 1", "exact risky phrase 2"],
-  "dates": ["exact date phrase 1"],
-  "obligations": ["exact obligation phrase 1"]
+  "summary": "**SUMMARY**\\n[2-3 sentence overview]\\n\\n**KEY OBLIGATIONS**\\n* [obligation 1]\\n* [obligation 2]\\n\\n**IMPORTANT DATES**\\n* [date 1]\\n\\n**RISK FLAGS**\\n* [risk 1]",
+  "highlights": {
+    "risky": ["phrase 1", "phrase 2"],
+    "dates": ["date phrase 1"],
+    "obligations": ["action phrase 1"]
+  }
 }
 
-Rules:
-- phrases must be EXACTLY as they appear in the text
-- max 5 items per category
-- keep phrases short (under 10 words)
+Rules for highlights:
+- Phrases must be EXACTLY as they appear in the text.
+- Short phrases (under 8 words).
+- Max 5 per category.
 
 Legal text:
-${text.slice(0, 2000)}`,
+${text.slice(0, 15000)}`,
       },
     ],
-    max_tokens: 512,
+    max_tokens: 800,
+    response_format: { type: "json_object" }
   })
 
   try {
     const content = completion.choices[0]?.message?.content ?? "{}"
-    const cleaned = content.replace(/```json|```/g, "").trim()
-    return JSON.parse(cleaned)
+    return JSON.parse(content)
   } catch (e) {
-    const content = completion.choices[0]?.message?.content ?? "{}"
-    console.error("JSON Parsing failed. Raw content from Groq:", content);
-    return { risky: [], dates: [], obligations: [] }
+    console.error("Analysis parsing failed:", e)
+    return {
+      summary: "Error analyzing document.",
+      highlights: { risky: [], dates: [], obligations: [] }
+    }
   }
 }

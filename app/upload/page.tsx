@@ -141,31 +141,22 @@ export default function UploadPage() {
     }
 
     try {
-      const [analysisRes, highlightRes] = await Promise.all([
-        fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: extractedText }),
-        }),
-        fetch("/api/highlight", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: extractedText }),
-        }),
-      ])
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: extractedText }),
+      })
       
-      const analysisData = await analysisRes.json()
-      const highlightData = await highlightRes.json()
+      const data = await res.json()
 
-      if (analysisData.error) {
-        setError(analysisData.error)
+      if (data.error) {
+        setError(data.error)
       } else {
-        setAnalysis(analysisData.analysis)
+        setAnalysis(data.summary)
+        setHighlights(data.highlights)
       }
-      
-      setHighlights(highlightData)
     } catch (err) {
-      setError("AI analysis temporarily unavailable. Please try again shortly.")
+      setError("AI is currently busy or rate-limited. Please wait 30 seconds and try again.")
     } finally {
       setAnalyzing(false)
     }
