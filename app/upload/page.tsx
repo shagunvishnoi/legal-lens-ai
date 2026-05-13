@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { UploadCloud, FileText, Loader2, Bot, X, Sparkles, Send, CheckCircle2 } from "lucide-react"
+import { UploadCloud, FileText, Loader2, Bot, X, Sparkles, Send, CheckCircle2, ShieldAlert } from "lucide-react"
 
 interface Highlights {
   risky: string[]
