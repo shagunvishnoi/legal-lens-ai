@@ -38,13 +38,18 @@ ${text.slice(0, 100000)}`;
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const content = response.text();
-    // Gemini sometimes adds backticks even if told not to
+    
+    if (!content) {
+      throw new Error("Empty response from Gemini");
+    }
+
     const cleaned = content.replace(/```json|```/g, "").trim();
     return JSON.parse(cleaned);
-  } catch (e) {
-    console.error("Gemini Analysis failed:", e);
+  } catch (e: any) {
+    console.error("CRITICAL Gemini Error:", e);
+    // Return the error message in the summary for easier debugging
     return {
-      summary: "Error analyzing document with Gemini.",
+      summary: `Error analyzing document: ${e.message || "Unknown Error"}. Please check if your GEMINI_API_KEY is correct and active.`,
       highlights: { risky: [], dates: [], obligations: [] }
     };
   }

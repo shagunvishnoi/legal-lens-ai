@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const relevantChunks = findRelevantChunks(question);
     const context = relevantChunks.join("\n\n");
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
 
     const prompt = `You are a warm, helpful, and natural AI Legal Assistant. Your goal is to help the user understand their document in plain, simple English.
 
