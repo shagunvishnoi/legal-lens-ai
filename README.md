@@ -1,7 +1,7 @@
 # LegalLens AI 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Blue)
-![AI Powered](https://img.shields.io/badge/AI-Groq-orange)
+![AI Powered](https://img.shields.io/badge/AI-Gemini-blue)
 ![Status](https://img.shields.io/badge/Version-V1-success)
 
 ### Intelligent Legal Document Analysis & Simplification Platform
@@ -72,8 +72,8 @@ Interactive AI Chat
 - Framer Motion
 
 ## AI Layer
-- Groq SDK
-- Llama 3.1 8B Instant
+- Google Generative AI SDK
+- Gemini 1.5 Flash
 - Prompt Engineering
 
 ## Processing
@@ -125,7 +125,7 @@ npm install
 Create a `.env.local` file in the root directory:
 
 ```env
-GROQ_API_KEY=your_groq_api_key
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ## 4. Run Development Server

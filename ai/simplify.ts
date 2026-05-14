@@ -1,6 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 export interface AnalysisResult {
   summary: string
@@ -12,11 +12,17 @@ export interface AnalysisResult {
 }
 
 export async function analyzeDocument(text: string): Promise<AnalysisResult> {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  try {
+    const model = genAI.getGenerativeModel({
+      model: "gemini-flash-latest",
+      generationConfig: {
+        responseMimeType: "application/json",
+      }
+    })
 
-  const prompt = `You are an expert legal assistant. Analyze the following legal text and provide a summary and highlight extraction in a SINGLE JSON object.
+    const prompt = `You are an expert legal assistant. Analyze the following legal text and provide a summary and highlight extraction in a SINGLE JSON object.
 
-Format your response EXACTLY like this (no other text, no markdown, no backticks):
+Format your response EXACTLY like this:
 {
   "summary": "**SUMMARY**\\n[2-3 sentence overview]\\n\\n**KEY OBLIGATIONS**\\n* [obligation 1]\\n* [obligation 2]\\n\\n**IMPORTANT DATES**\\n* [date 1]\\n\\n**RISK FLAGS**\\n* [risk 1]",
   "highlights": {
@@ -32,25 +38,17 @@ Rules for highlights:
 - Max 5 per category.
 
 Legal text:
-${text.slice(0, 100000)}`;
+${text.slice(0, 10000)}`
 
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const content = response.text();
+    const result = await model.generateContent(prompt)
+    const content = result.response.text()
     
-    if (!content) {
-      throw new Error("Empty response from Gemini");
-    }
-
-    const cleaned = content.replace(/```json|```/g, "").trim();
-    return JSON.parse(cleaned);
-  } catch (e: any) {
-    console.error("CRITICAL Gemini Error:", e);
-    // Return the error message in the summary for easier debugging
+    return JSON.parse(content)
+  } catch (e) {
+    console.error("Analysis parsing or API failed:", e)
     return {
-      summary: `Error analyzing document: ${e.message || "Unknown Error"}. Please check if your GEMINI_API_KEY is correct and active.`,
+      summary: "Error analyzing document.",
       highlights: { risky: [], dates: [], obligations: [] }
-    };
+    }
   }
 }
